@@ -20,11 +20,14 @@ const estado = {
   error: null,
   vistos: new Set(),        // ids ya notificados
   posicion: null,           // [lat, lon] del usuario, si lo autoriza
+  vista: 'sismos',          // sección activa: 'sismos' | 'aire'
   prefs: cargarPrefs()
 };
+estado.vista = estado.prefs.vista || 'sismos';
 
 function cargarPrefs() {
-  const base = { magMin: 0, dias: 7, umbralAviso: 5.0, avisos: false, tema: 'auto' };
+  const base = { magMin: 0, dias: 7, umbralAviso: 5.0, avisos: false,
+                 tema: 'auto', vista: 'sismos' };
   try { return Object.assign(base, JSON.parse(localStorage.getItem(PREF_KEY) || '{}')); }
   catch { return base; }
 }
@@ -328,15 +331,46 @@ function filtrados() {
 
 const $ = sel => document.querySelector(sel);
 
+let ultimosMarcadores = [];
+
+/* Repinta la sección activa. La de aire vive en aire.js y se registra sola. */
 function pintar() {
+  if (estado.vista === 'aire') { if (window.pintarAire) pintarAire(); return; }
   pintarEstado();
   const lista = filtrados();
   pintarResumen(lista);
   pintarLista(lista);
-  pintarMapa(lista);
+  pintarLeyendaSismos();
+  pintarMapa(marcadoresSismos(lista));
+  $('#creditos').innerHTML =
+    'Datos del <strong>Centro Sismológico Nacional</strong> (Universidad de Chile) ' +
+    'y del <strong>USGS</strong>. Esta app es informativa y no es un sistema de alerta ' +
+    'temprana: ante una emergencia siga las instrucciones de <strong>SENAPRED</strong>.';
+}
+
+function pintarLeyendaSismos() {
+  $('#leyenda').innerHTML = [
+    ['n1', '&lt;3'], ['n2', '3–4'], ['n3', '4–5'], ['n4', '5–6'], ['n5', '6+']
+  ].map(([c, t]) => `<li><i class="${c}"></i>${t}</li>`).join('');
+}
+
+function cambiarVista(vista) {
+  estado.vista = vista;
+  estado.prefs.vista = vista;
+  guardarPrefs();
+
+  document.querySelectorAll('.pestania').forEach(b =>
+    b.setAttribute('aria-selected', String(b.dataset.vista === vista)));
+  document.querySelectorAll('.panel').forEach(p =>
+    p.hidden = p.dataset.vista !== vista);
+
+  vistaFijada = false;                 // cada sección encuadra el mapa a lo suyo
+  if (vista === 'aire' && window.iniciarAire) iniciarAire();
+  pintar();
 }
 
 function pintarEstado() {
+  if (estado.vista !== 'sismos') return;   // la línea de estado es compartida
   const el = $('#estado');
   if (estado.cargando && !estado.sismos.length) { el.textContent = 'Consultando…'; el.className = 'estado'; return; }
   if (estado.error) { el.textContent = estado.error; el.className = 'estado alerta'; return; }
@@ -462,16 +496,26 @@ function ruta(puntos, cerrar) {
   }).join(' ') + (cerrar ? ' Z' : '');
 }
 
-function pintarMapa(lista) {
-  const svg = $('#mapa');
-  const conPos = lista.filter(s => s.lat != null && s.lon != null);
+/* Convierte los sismos en marcadores para el mapa. Los más recientes se
+   dibujan encima. */
+function marcadoresSismos(lista) {
+  return lista.filter(s => s.lat != null && s.lon != null).slice().reverse().map(s => ({
+    lat: s.lat, lon: s.lon,
+    r: Math.max(2, (s.mag - 1) * 1.4),
+    clase: nivel(s.mag).clase + (s.exacto ? '' : ' estimado'),
+    id: s.id,
+    titulo: s.mag.toFixed(1) + ' — ' + s.lugar
+  }));
+}
 
-  const puntos = conPos.slice().reverse().map(s => {
-    const [x, y] = proj(s.lat, s.lon);
-    const r = Math.max(2, (s.mag - 1) * 1.4);
-    const n = nivel(s.mag);
-    const clase = 'pt ' + n.clase + (s.exacto ? '' : ' estimado');
-    return `<circle class="${clase}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" data-id="${s.id}"><title>${escapar(s.mag.toFixed(1) + ' — ' + s.lugar)}</title></circle>`;
+/* El mapa es compartido por las dos secciones: recibe marcadores ya
+   resueltos, no sismos ni estaciones. */
+function pintarMapa(marcadores) {
+  const svg = $('#mapa');
+
+  const puntos = marcadores.map(m => {
+    const [x, y] = proj(m.lat, m.lon);
+    return `<circle class="pt ${m.clase}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${m.r.toFixed(1)}" data-id="${escapar(m.id)}"><title>${escapar(m.titulo)}</title></circle>`;
   }).join('');
 
   const ciudades = MAPA_CIUDADES.map(([nombre, lat, lon]) => {
@@ -490,6 +534,7 @@ function pintarMapa(lista) {
     <path class="tierra" d="${ruta(CHILOE_OUTLINE, true)}"/>
     ${ciudades}${puntos}${yo}`;
 
+  ultimosMarcadores = marcadores;
   if (vistaFijada) aplicarVista(); else vistaPais();
 }
 
@@ -583,7 +628,7 @@ function conectarMapa() {
   svg.addEventListener('click', e => {
     if (arrastroRecien) { arrastroRecien = false; return; }
     const c = e.target.closest('circle.pt');
-    if (c) abrirDetalle(c.dataset.id);
+    if (c) abrirFicha(c.dataset.id);
   });
 
   $('#zoom-mas').addEventListener('click', () => zoom(1 / 1.4, vista.x + vista.w / 2, vista.y + vista.h / 2));
@@ -593,7 +638,7 @@ function conectarMapa() {
   $('#zoom-reset').addEventListener('click', () => {
     vistaFijada = true;
     ceñido = !ceñido;
-    if (ceñido) vistaDatos(filtrados()); else vistaPais();
+    if (ceñido) vistaDatos(ultimosMarcadores); else vistaPais();
   });
 
   // Al girar el teléfono cambia el aspecto: reencuadramos sin perder el centro.
@@ -611,6 +656,12 @@ function separacion(t) {
 }
 
 /* ---------- detalle ---------- */
+
+/* Cada sección tiene su propia ficha; el clic es el mismo. */
+function abrirFicha(id) {
+  if (estado.vista === 'aire') { if (window.abrirDetalleAire) abrirDetalleAire(id); return; }
+  abrirDetalle(id);
+}
 
 function abrirDetalle(id) {
   const s = estado.sismos.find(x => x.id === id);
@@ -723,7 +774,8 @@ function conectarControles() {
     avisos.checked = !!ok && estado.prefs.avisos;
   });
 
-  $('#btn-refrescar').addEventListener('click', () => actualizar());
+  $('#btn-refrescar').addEventListener('click', () =>
+    estado.vista === 'aire' ? traerAire() : actualizar());
   $('#btn-ubicacion').addEventListener('click', pedirUbicacion);
   $('#btn-ajustes').addEventListener('click', () => $('#ajustes').showModal());
   $('#btn-tema').addEventListener('click', () => {
@@ -740,8 +792,11 @@ function conectarControles() {
 
   document.body.addEventListener('click', e => {
     const f = e.target.closest('.fila, .ultimo');
-    if (f) abrirDetalle(f.dataset.id);
+    if (f) abrirFicha(f.dataset.id);
   });
+
+  document.querySelectorAll('.pestania').forEach(b =>
+    b.addEventListener('click', () => cambiarVista(b.dataset.vista)));
 }
 
 function iniciar() {
@@ -749,8 +804,8 @@ function iniciar() {
   restaurarCache();
   conectarControles();
   conectarMapa();
-  if (estado.sismos.length) pintar();
-  actualizar();
+  cambiarVista(estado.vista);     // deja la sección donde la dejó el usuario
+  actualizar({ silencioso: estado.vista !== 'sismos' });
 
   setInterval(() => { if (!document.hidden) actualizar({ silencioso: true }); }, REFRESCO_MS);
   setInterval(() => { if (!document.hidden) pintar(); }, 60000);   // refresca los "hace X"

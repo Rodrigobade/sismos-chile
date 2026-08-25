@@ -98,6 +98,35 @@ main { max-width: 720px; margin: 0 auto; padding: 0 14px 32px; }
 }
 .icono:hover, .icono:focus-visible { background: var(--superficie-2); color: var(--texto); }
 
+/* ---- pestañas ---- */
+
+.pestanias {
+  position: sticky; top: 58px; z-index: 9;
+  display: flex; gap: 4px;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 8px 14px 0;
+}
+@media (min-width: 748px) { .pestanias { padding-left: 0; padding-right: 0; } }
+
+.pestania {
+  flex: 1;
+  padding: 9px 12px;
+  font: inherit; font-size: .88rem; font-weight: 550;
+  color: var(--texto-2);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.pestania[aria-selected="true"] {
+  color: var(--fondo);
+  background: var(--texto);
+  border-color: var(--texto);
+}
+
+.panel[hidden] { display: none; }
+
 .estado {
   max-width: 720px;
   margin: 0 auto;
@@ -378,3 +407,11 @@ dl { margin: 0; }
 @media (prefers-reduced-motion: no-preference) {
   .fila, .btn, .icono { transition: background-color .12s ease, color .12s ease; }
 }
+
+/* ---- estaciones sin medición ---- */
+
+.pt.sin  { fill: var(--texto-2); fill-opacity: .35; }
+.mag.sin { color: var(--texto-2); background: var(--superficie-2);
+           border: 1px solid var(--borde); }
+.ultimo.sin, .det-cab.sin { --nivel: var(--texto-2); }
+.leyenda .n6 { background: var(--n6); }

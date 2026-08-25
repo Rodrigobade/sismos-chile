@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Sismos Chile</title>
-<meta name="description" content="Sismos en Chile en tiempo real, con datos del Centro Sismológico Nacional y USGS. Sin publicidad.">
+<meta name="description" content="Sismos y calidad del aire en Chile en tiempo real, con datos del Centro Sismológico Nacional, USGS y el SINCA. Sin publicidad.">
 <meta name="theme-color" content="#0f1216">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icono.svg" type="image/svg+xml">
@@ -23,50 +23,69 @@
   </div>
 </header>
 
+<nav class="pestanias" role="tablist" aria-label="Secciones">
+  <button class="pestania" role="tab" data-vista="sismos" aria-selected="true">Sismos</button>
+  <button class="pestania" role="tab" data-vista="aire" aria-selected="false">Calidad del aire</button>
+</nav>
+
 <p id="estado" class="estado" role="status" aria-live="polite"></p>
 
 <main>
   <section id="resumen" class="resumen"></section>
 
   <section class="mapa-caja">
-    <svg id="mapa" viewBox="0 0 0 0" role="img" aria-label="Mapa de epicentros en Chile"></svg>
+    <svg id="mapa" viewBox="0 0 0 0" role="img" aria-label="Mapa de Chile"></svg>
     <div class="mapa-btns">
       <button id="zoom-mas" class="icono" aria-label="Acercar">+</button>
       <button id="zoom-menos" class="icono" aria-label="Alejar">−</button>
-      <button id="zoom-reset" class="icono" aria-label="Ver todo el país">⤢</button>
+      <button id="zoom-reset" class="icono" aria-label="Ajustar el mapa">⤢</button>
     </div>
-    <ul class="leyenda">
-      <li><i class="n1"></i>&lt;3</li>
-      <li><i class="n2"></i>3–4</li>
-      <li><i class="n3"></i>4–5</li>
-      <li><i class="n4"></i>5–6</li>
-      <li><i class="n5"></i>6+</li>
-    </ul>
+    <ul id="leyenda" class="leyenda"></ul>
   </section>
 
-  <section class="filtros">
-    <label class="filtro">
-      <span>Magnitud <b id="f-mag-val"></b></span>
-      <input id="f-mag" type="range" min="0" max="6" step="0.5">
-    </label>
-    <label class="filtro">
-      <span>Periodo</span>
-      <select id="f-dias">
-        <option value="1">Últimas 24 horas</option>
-        <option value="3">Últimos 3 días</option>
-        <option value="7">Última semana</option>
-        <option value="30">Último mes</option>
-      </select>
-    </label>
-  </section>
+  <div class="panel" data-vista="sismos">
+    <section class="filtros">
+      <label class="filtro">
+        <span>Magnitud <b id="f-mag-val"></b></span>
+        <input id="f-mag" type="range" min="0" max="6" step="0.5">
+      </label>
+      <label class="filtro">
+        <span>Periodo</span>
+        <select id="f-dias">
+          <option value="1">Últimas 24 horas</option>
+          <option value="3">Últimos 3 días</option>
+          <option value="7">Última semana</option>
+          <option value="30">Último mes</option>
+        </select>
+      </label>
+    </section>
+    <section id="lista" class="lista"></section>
+  </div>
 
-  <section id="lista" class="lista"></section>
+  <div class="panel" data-vista="aire" hidden>
+    <section class="filtros">
+      <label class="filtro">
+        <span>Región</span>
+        <select id="f-region"><option value="">Todo Chile</option></select>
+      </label>
+      <label class="filtro">
+        <span>Contaminante</span>
+        <select id="f-contaminante">
+          <option value="PM25">Material particulado fino (MP-2,5)</option>
+          <option value="PM10">Material particulado (MP-10)</option>
+          <option value="0008">Ozono</option>
+          <option value="0003">Dióxido de nitrógeno</option>
+          <option value="0001">Dióxido de azufre</option>
+          <option value="0004">Monóxido de carbono</option>
+        </select>
+      </label>
+    </section>
+    <section id="lista-aire" class="lista"></section>
+  </div>
 </main>
 
 <footer>
-  <p>Datos del <strong>Centro Sismológico Nacional</strong> (Universidad de Chile, vía api.gael.cloud)
-     y del <strong>USGS</strong>. Esta app es informativa y no constituye un sistema de alerta temprana:
-     ante una emergencia siga las instrucciones de <strong>SENAPRED</strong>.</p>
+  <p id="creditos"></p>
   <p class="fina">Sin publicidad, sin rastreo. Los datos se guardan solo en este dispositivo.
      <a href="privacidad.html">Privacidad</a> ·
      <a href="https://github.com/Rodrigobade/sismos-chile">Código fuente</a></p>
@@ -94,5 +113,6 @@
 
 <script src="geo.js"></script>
 <script src="app.js"></script>
+<script src="aire.js"></script>
 </body>
 </html>
