@@ -4,6 +4,11 @@
 
 'use strict';
 
+/* Módulo aislado en su propio ámbito. Son scripts clásicos, no módulos ES:
+   sin este envoltorio dos archivos que declaren una función con el mismo
+   nombre se pisan en el ámbito global, y el que carga último gana. */
+(function () {
+
 const SINCA_URL = 'https://sinca.mma.gob.cl/index.php/json/listadomapa2k19';
 const AIRE_CACHE = 'sismos-chile:aire:v1';
 const AIRE_REFRESCO_MS = 600000;   // 10 min: los datos son horarios
@@ -87,7 +92,7 @@ function limpiarHtml(s) {
 
 /* La respuesta cruda pesa ~1,5 MB (24 horas de cada contaminante de cada
    estación). Guardamos solo la última medición: unos pocos KB. */
-function destilar(crudo) {
+function destilarAire(crudo) {
   return crudo.map(e => {
     const medidas = {};
     for (const serie of e.realtime || []) {
@@ -117,7 +122,7 @@ async function traerAire() {
   try {
     const r = await fetch(SINCA_URL, { cache: 'no-store' });
     if (!r.ok) throw new Error('SINCA ' + r.status);
-    aire.estaciones = destilar(await r.json());
+    aire.estaciones = destilarAire(await r.json());
     aire.actualizado = Date.now();
     aire.error = null;
     try {
@@ -341,3 +346,5 @@ document.addEventListener('DOMContentLoaded', () => {
     pintarAire();
   });
 });
+
+})();

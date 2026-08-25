@@ -7,6 +7,11 @@
 
 'use strict';
 
+/* Módulo aislado en su propio ámbito. Son scripts clásicos, no módulos ES:
+   sin este envoltorio dos archivos que declaren una función con el mismo
+   nombre se pisan en el ámbito global, y el que carga último gana. */
+(function () {
+
 const CLIMA_URL = 'https://api.open-meteo.com/v1/forecast';
 const CLIMA_CACHE = 'sismos-chile:clima:v1';
 const CLIMA_REFRESCO_MS = 900000;   // 15 min
@@ -278,3 +283,5 @@ document.addEventListener('DOMContentLoaded', () => {
     traerClima();
   });
 });
+
+})();

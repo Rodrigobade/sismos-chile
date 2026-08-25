@@ -4,6 +4,11 @@
 
 'use strict';
 
+/* Módulo aislado en su propio ámbito. Son scripts clásicos, no módulos ES:
+   sin este envoltorio dos archivos que declaren una función con el mismo
+   nombre se pisan en el ámbito global, y el que carga último gana. */
+(function () {
+
 const FARMACIAS_URL = 'https://midas.minsal.cl/farmacia_v2/WS/getLocalesTurnos.php';
 const FARM_CACHE = 'sismos-chile:farmacias:v1';
 const FARM_REFRESCO_MS = 1800000;   // 30 min: los turnos cambian una vez al día
@@ -67,7 +72,7 @@ function normalizarTelefono(t) {
   return limpio.replace(/^\+?56/, '').length >= 8 ? limpio : '';
 }
 
-function destilar(crudo) {
+function destilarFarmacias(crudo) {
   return crudo.map(f => {
     const lat = parseFloat(f.local_lat), lon = parseFloat(f.local_lng);
     const ok = coordenadaPlausible(lat, lon);
@@ -97,7 +102,7 @@ async function traerFarmacias() {
   try {
     const r = await fetch(FARMACIAS_URL, { cache: 'no-store' });
     if (!r.ok) throw new Error('MINSAL ' + r.status);
-    farm.locales = destilar(await r.json());
+    farm.locales = destilarFarmacias(await r.json());
     farm.actualizado = Date.now();
     farm.error = null;
     try {
@@ -278,3 +283,5 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#f-comuna').addEventListener('change', e => { farm.comuna = e.target.value; pintarFarmacias(); });
   $('#f-abiertas').addEventListener('change', e => { farm.soloAbiertas = e.target.checked; pintarFarmacias(); });
 });
+
+})();
