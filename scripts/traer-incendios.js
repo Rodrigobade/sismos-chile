@@ -15,7 +15,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const LLAVE = process.env.FIRMS_MAP_KEY;
+// Al pegar la llave en la interfaz de GitHub es fácil que se cuele un espacio
+// o un salto de línea: iría dentro de la URL y FIRMS la rechazaría.
+const LLAVE = (process.env.FIRMS_MAP_KEY || '').trim();
 const DIAS = 2;
 const AREA = '-76,-56.5,-66,-17';            // oeste,sur,este,norte
 const FUENTES = ['VIIRS_SNPP_NRT', 'VIIRS_NOAA20_NRT', 'MODIS_NRT'];
@@ -55,9 +57,11 @@ async function traer(fuente) {
   const url = `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${LLAVE}/${fuente}/${AREA}/${DIAS}`;
   const r = await fetch(url);
   const texto = await r.text();
+  // null = no se pudo preguntar. [] = se preguntó y no había focos.
+  // La diferencia importa: lo segundo es normal fuera de temporada.
   if (!r.ok || /invalid|error/i.test(texto.slice(0, 60))) {
     console.warn(`${fuente}: ${r.status} ${texto.slice(0, 80)}`);
-    return [];
+    return null;
   }
   const filas = leerCSV(texto);
   console.log(`${fuente}: ${filas.length} detecciones`);
@@ -86,9 +90,35 @@ function agrupar(detecciones) {
     (b.fecha + b.hora).localeCompare(a.fecha + a.hora) || b.frp - a.frp);
 }
 
+/* Comprueba la llave antes de nada, y da un diagnóstico útil sin revelarla:
+   el largo basta para detectar el error más común, que es haberla pegado con
+   un espacio de más o cortada. */
+async function comprobarLlave() {
+  const r = await fetch(`https://firms.modaps.eosdis.nasa.gov/api/data_availability/csv/${LLAVE}/all`);
+  const texto = (await r.text()).trim();
+  if (r.ok && !/invalid/i.test(texto)) return true;
+  console.error('FIRMS rechazó la llave.');
+  console.error(`  respuesta: ${r.status} ${texto.slice(0, 80)}`);
+  console.error(`  la llave cargada tiene ${LLAVE.length} caracteres`);
+  console.error('  Una MAP_KEY válida son 32 caracteres hexadecimales.');
+  console.error('  Revísala en https://firms.modaps.eosdis.nasa.gov/api/map_key/');
+  return false;
+}
+
 (async () => {
+  if (!await comprobarLlave()) process.exit(1);
+
   const listas = await Promise.all(FUENTES.map(traer));
-  const focos = agrupar(listas.flat());
+
+  // Si ninguna fuente pudo responder, no escribimos nada: un archivo con cero
+  // focos se leería en la app como "no hay incendios", que es muy distinto de
+  // "no pude preguntar". Mejor fallar y que se note.
+  if (listas.every(l => l === null)) {
+    console.error('Ninguna fuente respondió. No se escribe el archivo.');
+    process.exit(1);
+  }
+
+  const focos = agrupar(listas.filter(Boolean).flat());
 
   const salida = {
     generado: new Date().toISOString(),
