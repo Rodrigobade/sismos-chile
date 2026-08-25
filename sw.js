@@ -2,7 +2,7 @@
    Los datos sísmicos NO se cachean aquí: siempre van a la red y, si falla,
    app.js muestra la última copia guardada en localStorage. */
 
-const CACHE = 'sismos-chile-v5';
+const CACHE = 'sismos-chile-v6';
 const ARCHIVOS = [
   './',
   'index.html',
@@ -21,7 +21,10 @@ const ARCHIVOS = [
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE)
-      .then(c => c.addAll(ARCHIVOS))
+      // Sin `cache: 'reload'` el navegador sirve estos archivos desde su propia
+      // caché HTTP (GitHub Pages manda max-age), y la versión nueva del service
+      // worker termina guardando los archivos viejos.
+      .then(c => c.addAll(ARCHIVOS.map(u => new Request(u, { cache: 'reload' }))))
       .then(() => self.skipWaiting())
   );
 });
