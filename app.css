@@ -353,6 +353,28 @@ dl { margin: 0; }
 }
 .btn:hover { border-color: var(--acento); color: var(--acento); }
 
+/* ---- página de privacidad ---- */
+
+.texto { max-width: 680px; margin: 0 auto; padding: 6px 16px 48px; font-size: .94rem; }
+.texto h2 { margin: 28px 0 10px; font-size: 1rem; font-weight: 650; }
+.texto p, .texto li { color: var(--texto); }
+.texto ul { padding-left: 20px; }
+.texto li { margin-bottom: 7px; }
+.texto a { color: var(--acento); }
+.texto code { padding: 1px 4px; font-size: .85em;
+              background: var(--superficie-2); border-radius: 4px; }
+.fecha { color: var(--texto-2); font-size: .8rem; }
+.resumen-lista { padding-left: 20px; }
+.aviso { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--borde); }
+
+.tabla-scroll { overflow-x: auto; margin: 12px 0 16px; }
+.texto table { width: 100%; min-width: 520px; border-collapse: collapse; font-size: .84rem; }
+.texto th, .texto td { padding: 9px 10px; text-align: left; vertical-align: top;
+                       border-bottom: 1px solid var(--borde); }
+.texto th { color: var(--texto-2); font-weight: 600; white-space: nowrap; }
+
+.barra a.icono { text-decoration: none; }
+
 @media (prefers-reduced-motion: no-preference) {
   .fila, .btn, .icono { transition: background-color .12s ease, color .12s ease; }
 }

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Privacidad · Sismos Chile</title>
+<meta name="description" content="Qué datos toca la aplicación Sismos Chile y qué no hace con ellos.">
+<meta name="theme-color" content="#0f1216">
+<link rel="icon" href="icono.svg" type="image/svg+xml">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="barra">
+  <h1>Privacidad</h1>
+  <div class="barra-btns"><a class="icono" href="./" title="Volver" aria-label="Volver">←</a></div>
+</header>
+
+<main class="texto">
+
+<p class="fecha">Versión 1 · 25 de agosto de 2026</p>
+
+<h2>En resumen</h2>
+<ul class="resumen-lista">
+  <li>La aplicación <strong>no tiene cuentas, ni servidor propio, ni publicidad, ni analítica</strong>.
+      No hay nada que registrar sobre ti.</li>
+  <li>Si autorizas la ubicación, se usa <strong>solo dentro de tu teléfono</strong> para calcular a
+      cuántos kilómetros quedó el epicentro. No se guarda ni se envía a ninguna parte.</li>
+  <li>Lo único que queda almacenado son <strong>tus preferencias y la última lista de sismos</strong>,
+      en el navegador de tu propio dispositivo.</li>
+  <li>Al abrir la aplicación, tu <strong>dirección IP queda visible</strong> para los tres servicios
+      que entregan la página y los datos: GitHub, gael.cloud y el USGS. Eso ocurre en cualquier
+      sitio web, pero corresponde decirlo.</li>
+  <li>Para borrar todo: <em>Configuración del navegador → Datos de sitios → borrar los de este
+      sitio</em>. O desinstala la aplicación si la instalaste.</li>
+</ul>
+
+<h2>1. Quién responde por esto</h2>
+<p>Sismos Chile es un proyecto personal y gratuito, sin fines comerciales, publicado en
+   <a href="https://github.com/Rodrigobade/sismos-chile">github.com/Rodrigobade/sismos-chile</a>.
+   Para cualquier consulta sobre privacidad puedes abrir un
+   <a href="https://github.com/Rodrigobade/sismos-chile/issues">issue en ese repositorio</a>.</p>
+
+<h2>2. A quién está dirigida</h2>
+<p>Al público general en Chile. No está dirigida a niños, niñas ni adolescentes, no pide edad y no
+   trata datos que permitan deducirla.</p>
+
+<h2>3. Qué datos se tratan y para qué</h2>
+
+<div class="tabla-scroll">
+<table>
+<thead>
+  <tr><th>Dato</th><th>Para qué</th><th>Base de licitud</th><th>Dónde queda</th></tr>
+</thead>
+<tbody>
+  <tr>
+    <td>Ubicación aproximada del dispositivo</td>
+    <td>Calcular la distancia entre tú y el epicentro, y dibujar tu posición en el mapa</td>
+    <td>Tu consentimiento, que das en el aviso del navegador y puedes revocar cuando quieras</td>
+    <td>Solo en la memoria de la aplicación mientras está abierta. Se pierde al cerrarla.</td>
+  </tr>
+  <tr>
+    <td>Preferencias (magnitud mínima, periodo, tema, umbral de aviso)</td>
+    <td>Que la aplicación abra como la dejaste</td>
+    <td>Interés legítimo en que la aplicación funcione</td>
+    <td><code>localStorage</code> de tu navegador, en tu dispositivo</td>
+  </tr>
+  <tr>
+    <td>Última lista de sismos descargada</td>
+    <td>Poder mostrarte algo cuando no hay señal</td>
+    <td>Interés legítimo en que la aplicación funcione</td>
+    <td><code>localStorage</code> de tu navegador. Se reemplaza en cada actualización.</td>
+  </tr>
+  <tr>
+    <td>Dirección IP</td>
+    <td>No se usa: es inherente a cualquier conexión a internet. La reciben los servicios
+        que entregan la página y los datos, no la aplicación.</td>
+    <td>Necesario para prestar el servicio que pediste</td>
+    <td>En los registros de esos terceros, según sus propias políticas</td>
+  </tr>
+</tbody>
+</table>
+</div>
+
+<p>La lista de sismos no contiene datos personales de nadie: son hora, magnitud, profundidad y
+   referencia geográfica de eventos naturales.</p>
+
+<h2>4. Qué no se hace</h2>
+<ul>
+  <li>No se venden ni ceden datos personales.</li>
+  <li>No hay publicidad ni perfilamiento publicitario.</li>
+  <li>No hay Google Analytics, Firebase, SDK de Facebook ni ninguna herramienta de medición.</li>
+  <li>No se crean cuentas ni se pide correo, teléfono ni nombre.</li>
+  <li>No se usan datos para entrenar modelos de inteligencia artificial.</li>
+  <li><strong>Tu ubicación no se transmite a ningún servidor</strong>, tampoco a los del autor,
+      que no existen.</li>
+</ul>
+
+<h2>5. Cómo funciona la ubicación</h2>
+<p>Es opcional: la aplicación funciona completa sin ella. Cuando pulsas el botón de ubicación, el
+   navegador te pide permiso. Si lo das, la coordenada se usa en el mismo dispositivo para dos
+   cálculos — la distancia al epicentro y el punto azul en el mapa — y se descarta al cerrar la
+   aplicación. Nunca se escribe en disco ni sale del teléfono.</p>
+<p>Puedes retirar el permiso cuando quieras desde el candado en la barra de direcciones del
+   navegador, o en los ajustes del sitio. Retirarlo no afecta nada más de la aplicación.</p>
+
+<h2>6. Con quién se comparten datos</h2>
+<p>Con nadie, por decisión de diseño. Ahora bien, para que la aplicación funcione tu navegador se
+   conecta a tres servicios de terceros, y en toda conexión de internet el destinatario ve la
+   dirección IP de origen:</p>
+
+<div class="tabla-scroll">
+<table>
+<thead>
+  <tr><th>Servicio</th><th>Qué recibe</th><th>Para qué</th><th>Dónde está</th></tr>
+</thead>
+<tbody>
+  <tr>
+    <td>GitHub Pages</td><td>Tu IP y el tipo de navegador</td>
+    <td>Entregarte los archivos de la aplicación</td><td>Estados Unidos</td>
+  </tr>
+  <tr>
+    <td>api.gael.cloud</td><td>Tu IP</td>
+    <td>Entregar el listado del Centro Sismológico Nacional</td><td>Chile</td>
+  </tr>
+  <tr>
+    <td>earthquake.usgs.gov</td><td>Tu IP</td>
+    <td>Entregar el catálogo del USGS, con las coordenadas</td><td>Estados Unidos</td>
+  </tr>
+</tbody>
+</table>
+</div>
+
+<p><strong>Transferencia internacional:</strong> dos de esos servicios están fuera de Chile. No se
+   les envía ningún dato tuyo aparte de la IP inherente a la conexión, y no se les envía jamás tu
+   ubicación. Cada uno se rige por su propia política de privacidad.</p>
+
+<h2>7. Tus derechos</h2>
+<p>La Ley 21.719 te da derecho a acceder a tus datos, rectificarlos, suprimirlos, oponerte al
+   tratamiento, portarlos y bloquearlo. En esta aplicación esos derechos se ejercen <strong>de
+   manera directa y sin pedirle permiso a nadie</strong>, porque todos los datos están en tu
+   dispositivo: bórralos desde los ajustes de tu navegador y no queda nada.</p>
+<p>Si algo de esta política no te cuadra, escribe un
+   <a href="https://github.com/Rodrigobade/sismos-chile/issues">issue en el repositorio</a>.
+   Si consideras que no se atendió bien tu solicitud, puedes reclamar ante la Agencia de
+   Protección de Datos Personales.</p>
+
+<h2>8. Seguridad</h2>
+<p>El sitio se sirve solo por HTTPS y las dos consultas de datos también van cifradas. Al no haber
+   servidor ni base de datos del autor, no existe un depósito central que pueda ser vulnerado.
+   Ningún sistema es completamente seguro, pero aquí la superficie de riesgo se redujo eliminando
+   la recolección, no prometiendo protegerla.</p>
+
+<h2>9. Conservación</h2>
+<p>Las preferencias y la última lista de sismos quedan en tu navegador hasta que borres los datos
+   del sitio o desinstales la aplicación. La ubicación se descarta al cerrar. El autor no conserva
+   nada, porque no recibe nada.</p>
+
+<h2>10. Cambios</h2>
+<p>Si esta política cambia, la nueva versión se publica en esta misma página con su fecha, y el
+   historial completo queda visible en el repositorio público.</p>
+
+<h2>11. Advertencia importante</h2>
+<p>Sismos Chile es <strong>informativa</strong> y no es un sistema de alerta temprana: muestra
+   sismos ya ocurridos, cuando el CSN o el USGS los publican. Ante una emergencia rigen las
+   instrucciones de <strong>SENAPRED</strong>.</p>
+
+<p class="fina aviso">Este documento describe el software tal como está publicado y puede
+   verificarse leyendo su código fuente. No constituye asesoría legal; si la aplicación llegara a
+   crecer hacia funciones con servidor, cuentas o notificaciones push, debe revisarse de nuevo.</p>
+
+</main>
+</body>
+</html>

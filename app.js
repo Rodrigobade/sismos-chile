@@ -653,8 +653,26 @@ async function compartir(s) {
 
 /* ---------- ubicación ---------- */
 
+/* El aviso del navegador no dice para qué se pide la ubicación. Explicarlo
+   antes es lo que convierte el permiso en consentimiento informado. */
 function pedirUbicacion() {
   if (!navigator.geolocation) return;
+
+  if (estado.posicion) {   // ya la tenemos: el botón la quita
+    estado.posicion = null;
+    pintar();
+    return;
+  }
+
+  const ok = confirm(
+    'Sismos Chile puede usar tu ubicación para mostrarte a cuántos kilómetros ' +
+    'quedó cada epicentro.\n\n' +
+    'La coordenada se usa solo dentro de este dispositivo: no se guarda ni se ' +
+    'envía a ningún servidor.\n\n' +
+    '¿Continuar?'
+  );
+  if (!ok) return;
+
   navigator.geolocation.getCurrentPosition(
     p => { estado.posicion = [p.coords.latitude, p.coords.longitude]; pintar(); },
     () => { $('#estado').textContent = 'No se pudo obtener tu ubicación.'; },
