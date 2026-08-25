@@ -2,8 +2,9 @@
 
 **https://rodrigobade.github.io/sismos-chile/**
 
-Cuatro cosas útiles en una sola app, con fuentes oficiales y sin publicidad:
-**sismos**, **farmacias de turno**, **clima** y **calidad del aire**.
+Cinco cosas útiles en una sola app, con fuentes oficiales y sin publicidad:
+**sismos**, **farmacias de turno**, **incendios**, **clima** y **calidad del
+aire**.
 
 Es una PWA: se instala en el teléfono desde el navegador, pesa menos de 100 KB
 y funciona sin conexión con los últimos datos descargados.
