@@ -28,6 +28,7 @@ y funciona sin conexión con los últimos datos descargados.
 | **Farmacias de turno** | MINSAL, `midas.minsal.cl` | ~333 farmacias en ~237 comunas, con horario, teléfono y coordenadas |
 | **Clima** | Open-Meteo | tiempo actual y pronóstico a 7 días |
 | **Calidad del aire** | SINCA, Ministerio del Medio Ambiente | 121 estaciones e índice ICAP oficial |
+| **Incendios** | NASA FIRMS (VIIRS y MODIS) | focos de calor por satélite, con potencia radiativa |
 
 Ninguna pide clave ni registro, y todas responden con `Access-Control-Allow-Origin: *`.
 
@@ -71,7 +72,9 @@ teléfono para preseleccionar la ciudad más cercana.
 | `index.html` | estructura y pestañas |
 | `app.css` | estilos, temas claro y oscuro |
 | `app.js` | armazón: estado, mapa, registro de secciones, sismos |
-| `aire.js`, `farmacias.js`, `clima.js` | una sección cada uno |
+| `aire.js`, `farmacias.js`, `clima.js`, `incendios.js` | una sección cada uno |
+| `scripts/traer-incendios.js` | consulta a FIRMS, **corre en GitHub Actions** |
+| `version.js` | sella el número de versión antes de publicar |
 | `geo.js` | localidades chilenas y contorno de Chile |
 | `mundo.js` | contorno de los continentes (Natural Earth, dominio público) |
 | `sw.js` | service worker |
@@ -119,9 +122,8 @@ versión vieja, y la segunda ya sale la nueva. Para forzarlo, sube el número de
 
 - **Alertas oficiales de SENAPRED**: no publican un feed consumible.
 - **Tsunami (SHOA)**: su sitio bloquea las consultas (403).
-- **Incendios forestales**: CONAF y SERNAGEOMIN solo publican RSS de prensa
-  institucional, sin CORS y sin datos de emergencia. La alternativa real es
-  NASA FIRMS, que necesita una llave gratuita que debe pedir el titular.
+- **Incendios de CONAF**: solo publican RSS de prensa institucional, sin CORS y
+  sin datos de emergencia. Se resolvió por otro lado, con NASA FIRMS.
 - **Cortes de luz**: las eléctricas no publican datos abiertos; sus mapas son
   sitios cerrados.
 
@@ -144,3 +146,26 @@ node "C:/Users/ONE-TOUCH/Documents/Sismos Chile/version.js"
 
 Eso sube el número en `sw.js`, `index.html` y `privacidad.html` de una sola vez.
 Después, `git add -A && git commit && git push`.
+
+## Cómo llegan los focos de incendio
+
+FIRMS **no manda cabeceras CORS**, así que el navegador no puede consultarlo
+directo, y su llave no puede ir en el código porque el repositorio es público.
+
+En vez de montar un servidor, la consulta la hace GitHub Actions:
+`.github/workflows/incendios.yml` corre cada tres horas, ejecuta
+`scripts/traer-incendios.js` con la llave guardada como **secreto del
+repositorio**, y deja un `incendios.json` chico junto a la app. El navegador lee
+ese archivo desde su mismo origen.
+
+Con eso: sin problema de CORS, sin llave expuesta, sin servidor que mantener, y
+la NASA nunca ve la IP de quien usa la app.
+
+Para que empiece a funcionar hay que cargar la llave una sola vez:
+
+```bash
+gh secret set FIRMS_MAP_KEY --repo Rodrigobade/sismos-chile
+```
+
+También se puede hacer desde *Settings → Secrets and variables → Actions → New
+repository secret*, con el nombre `FIRMS_MAP_KEY`.

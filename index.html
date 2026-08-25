@@ -6,10 +6,10 @@
 <title>Sismos Chile</title>
 <meta name="description" content="Sismos, farmacias de turno, clima y calidad del aire en Chile, en tiempo real y con fuentes oficiales. Sin publicidad ni rastreo.">
 <meta name="theme-color" content="#0f1216">
-<link rel="manifest" href="manifest.webmanifest?v=7">
+<link rel="manifest" href="manifest.webmanifest?v=9">
 <link rel="icon" href="icono.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icono-180.png">
-<link rel="stylesheet" href="app.css?v=7">
+<link rel="stylesheet" href="app.css?v=9">
 </head>
 <body>
 
@@ -26,6 +26,7 @@
 <nav class="pestanias" role="tablist" aria-label="Secciones">
   <button class="pestania" role="tab" data-vista="sismos" aria-selected="true">Sismos</button>
   <button class="pestania" role="tab" data-vista="farmacias" aria-selected="false">Farmacias de turno</button>
+  <button class="pestania" role="tab" data-vista="incendios" aria-selected="false">Incendios</button>
   <button class="pestania" role="tab" data-vista="clima" aria-selected="false">Clima</button>
   <button class="pestania" role="tab" data-vista="aire" aria-selected="false">Calidad del aire</button>
 </nav>
@@ -88,6 +89,21 @@
     <section id="lista-farmacias" class="lista"></section>
   </div>
 
+  <div class="panel" data-vista="incendios" hidden>
+    <section class="filtros">
+      <label class="filtro">
+        <span>Periodo</span>
+        <select id="f-horas">
+          <option value="6">Últimas 6 horas</option>
+          <option value="12">Últimas 12 horas</option>
+          <option value="24" selected>Últimas 24 horas</option>
+          <option value="48">Últimas 48 horas</option>
+        </select>
+      </label>
+    </section>
+    <section id="lista-incendios" class="lista"></section>
+  </div>
+
   <div class="panel" data-vista="clima" hidden>
     <section class="filtros">
       <label class="filtro">
@@ -147,11 +163,12 @@
      Ningún dato sale de tu teléfono.</p>
 </dialog>
 
-<script src="geo.js?v=7"></script>
-<script src="mundo.js?v=7"></script>
-<script src="app.js?v=7"></script>
-<script src="aire.js?v=7"></script>
-<script src="farmacias.js?v=7"></script>
-<script src="clima.js?v=7"></script>
+<script src="geo.js?v=9"></script>
+<script src="mundo.js?v=9"></script>
+<script src="app.js?v=9"></script>
+<script src="aire.js?v=9"></script>
+<script src="farmacias.js?v=9"></script>
+<script src="clima.js?v=9"></script>
+<script src="incendios.js?v=9"></script>
 </body>
 </html>

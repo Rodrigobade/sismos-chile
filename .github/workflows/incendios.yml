@@ -1,0 +1,45 @@
+name: Actualizar focos de incendio
+
+# FIRMS no permite consultas desde el navegador (no manda cabeceras CORS) y la
+# llave no puede ir en el código porque el repositorio es público. Así que la
+# consulta se hace acá, con la llave guardada como secreto, y el resultado
+# queda como un archivo estático que la app lee desde su mismo origen.
+
+on:
+  schedule:
+    - cron: '17 */3 * * *'      # cada 3 horas
+  workflow_dispatch:             # y a mano cuando haga falta
+
+permissions:
+  contents: write
+
+concurrency:
+  group: incendios
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Consultar NASA FIRMS
+        env:
+          FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
+        run: node scripts/traer-incendios.js
+
+      - name: Publicar si cambió
+        run: |
+          if [ -z "$(git status --porcelain incendios.json)" ]; then
+            echo "Sin cambios."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add incendios.json
+          git commit -m "datos: focos de incendio $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git push
