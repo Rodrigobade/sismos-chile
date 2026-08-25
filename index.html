@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sismos Chile</title>
+<meta name="description" content="Sismos en Chile en tiempo real, con datos del Centro Sismológico Nacional y USGS. Sin publicidad.">
+<meta name="theme-color" content="#0f1216">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icono.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icono-180.png">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<header class="barra">
+  <h1>Sismos Chile</h1>
+  <div class="barra-btns">
+    <button id="btn-ubicacion" class="icono" title="Usar mi ubicación" aria-label="Usar mi ubicación">◎</button>
+    <button id="btn-tema" class="icono" title="Cambiar tema" aria-label="Cambiar tema">◐</button>
+    <button id="btn-ajustes" class="icono" title="Ajustes" aria-label="Ajustes">⚙</button>
+    <button id="btn-refrescar" class="icono" title="Actualizar" aria-label="Actualizar">↻</button>
+  </div>
+</header>
+
+<p id="estado" class="estado" role="status" aria-live="polite"></p>
+
+<main>
+  <section id="resumen" class="resumen"></section>
+
+  <section class="mapa-caja">
+    <svg id="mapa" viewBox="0 0 0 0" role="img" aria-label="Mapa de epicentros en Chile"></svg>
+    <div class="mapa-btns">
+      <button id="zoom-mas" class="icono" aria-label="Acercar">+</button>
+      <button id="zoom-menos" class="icono" aria-label="Alejar">−</button>
+      <button id="zoom-reset" class="icono" aria-label="Ver todo el país">⤢</button>
+    </div>
+    <ul class="leyenda">
+      <li><i class="n1"></i>&lt;3</li>
+      <li><i class="n2"></i>3–4</li>
+      <li><i class="n3"></i>4–5</li>
+      <li><i class="n4"></i>5–6</li>
+      <li><i class="n5"></i>6+</li>
+    </ul>
+  </section>
+
+  <section class="filtros">
+    <label class="filtro">
+      <span>Magnitud <b id="f-mag-val"></b></span>
+      <input id="f-mag" type="range" min="0" max="6" step="0.5">
+    </label>
+    <label class="filtro">
+      <span>Periodo</span>
+      <select id="f-dias">
+        <option value="1">Últimas 24 horas</option>
+        <option value="3">Últimos 3 días</option>
+        <option value="7">Última semana</option>
+        <option value="30">Último mes</option>
+      </select>
+    </label>
+  </section>
+
+  <section id="lista" class="lista"></section>
+</main>
+
+<footer>
+  <p>Datos del <strong>Centro Sismológico Nacional</strong> (Universidad de Chile, vía api.gael.cloud)
+     y del <strong>USGS</strong>. Esta app es informativa y no constituye un sistema de alerta temprana:
+     ante una emergencia siga las instrucciones de <strong>SENAPRED</strong>.</p>
+  <p class="fina">Sin publicidad, sin rastreo. Los datos se guardan solo en este dispositivo.</p>
+</footer>
+
+<dialog id="detalle">
+  <button class="cerrar" aria-label="Cerrar">×</button>
+  <div id="detalle-cuerpo"></div>
+</dialog>
+
+<dialog id="ajustes">
+  <button class="cerrar" aria-label="Cerrar">×</button>
+  <h2>Ajustes</h2>
+  <label class="filtro">
+    <span>Avisarme de sismos <b id="f-umbral-val"></b></span>
+    <input id="f-umbral" type="range" min="3" max="7" step="0.5">
+  </label>
+  <label class="check">
+    <input id="f-avisos" type="checkbox">
+    <span>Activar avisos mientras la app está abierta</span>
+  </label>
+  <p class="fina">Los avisos llegan cuando la app está abierta o en segundo plano reciente.
+     Ningún dato sale de tu teléfono.</p>
+</dialog>
+
+<script src="geo.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
