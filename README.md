@@ -1,5 +1,7 @@
 # Sismos Chile
 
+**https://rodrigobade.github.io/sismos-chile/**
+
 App de sismos en Chile: lista en tiempo real, mapa de epicentros, filtros y avisos.
 Es una PWA — se instala en el teléfono desde el navegador y funciona sin conexión
 con los últimos datos descargados.
@@ -53,14 +55,14 @@ node "C:/Users/ONE-TOUCH/Documents/Sismos Chile/server.js"
 
 Y abrir <http://localhost:5177>.
 
-## Publicarla e instalarla en el teléfono
+## Instalarla en el teléfono
 
-La app son archivos estáticos: sirve cualquier hosting gratis (GitHub Pages,
-Netlify, Cloudflare Pages). Requisito: **HTTPS**, porque sin eso no funcionan
-el service worker ni los avisos.
+Abre <https://rodrigobade.github.io/sismos-chile/> en Chrome y usa
+*Menú (⋮) → Instalar aplicación* (o *Agregar a la pantalla principal*). En iPhone,
+en Safari: *Compartir → Agregar a inicio*. Queda con ícono propio y abre a
+pantalla completa, sin barra del navegador.
 
-Una vez publicada, se abre la URL en Chrome del teléfono y se usa
-*Menú → Instalar aplicación*. Queda con ícono propio y abre a pantalla completa.
+Cada `git push` a `main` republica el sitio solo, en un par de minutos.
 
 ## Si haces cambios y no se ven
 
