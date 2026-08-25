@@ -131,3 +131,16 @@ La app no manda nada a ningún servidor propio, porque no existe. La ubicación,
 si se autoriza, se usa solo dentro del teléfono y nunca se guarda ni se
 transmite. Las preferencias y la última copia de los datos viven en el
 `localStorage` del navegador. Ver [privacidad.html](privacidad.html).
+
+## Publicar una versión nueva
+
+GitHub Pages sirve los archivos con `Cache-Control: max-age=600`, así que
+durante diez minutos el navegador sigue usando su copia vieja. Por eso cada
+versión lleva su número en la URL (`app.js?v=7`). Antes de publicar:
+
+```bash
+node "C:/Users/ONE-TOUCH/Documents/Sismos Chile/version.js"
+```
+
+Eso sube el número en `sw.js`, `index.html` y `privacidad.html` de una sola vez.
+Después, `git add -A && git commit && git push`.

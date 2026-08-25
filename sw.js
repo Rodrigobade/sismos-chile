@@ -2,20 +2,20 @@
    Los datos sísmicos NO se cachean aquí: siempre van a la red y, si falla,
    app.js muestra la última copia guardada en localStorage. */
 
-const CACHE = 'sismos-chile-v6';
+const CACHE = 'sismos-chile-v7';
 const ARCHIVOS = [
   './',
-  'index.html',
-  'privacidad.html',
-  'app.css',
-  'geo.js',
-  'mundo.js',
-  'app.js',
-  'aire.js',
-  'farmacias.js',
-  'clima.js',
-  'manifest.webmanifest',
-  'icono.svg'
+  'index.html?v=7',
+  'privacidad.html?v=7',
+  'app.css?v=7',
+  'geo.js?v=7',
+  'mundo.js?v=7',
+  'app.js?v=7',
+  'aire.js?v=7',
+  'farmacias.js?v=7',
+  'clima.js?v=7',
+  'manifest.webmanifest?v=7',
+  'icono.svg?v=7'
 ];
 
 self.addEventListener('install', e => {
@@ -49,10 +49,10 @@ self.addEventListener('fetch', e => {
       fetch(e.request)
         .then(r => {
           const copia = r.clone();
-          caches.open(CACHE).then(c => c.put('index.html', copia));
+          caches.open(CACHE).then(c => c.put('index.html?v=7', copia));
           return r;
         })
-        .catch(() => caches.match('index.html'))
+        .catch(() => caches.match('index.html?v=7'))
     );
     return;
   }
