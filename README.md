@@ -30,7 +30,9 @@ y funciona sin conexión con los últimos datos descargados.
 | **Calidad del aire** | SINCA, Ministerio del Medio Ambiente | 121 estaciones e índice ICAP oficial |
 | **Incendios** | NASA FIRMS (VIIRS y MODIS) | focos de calor por satélite, con potencia radiativa |
 
-Ninguna pide clave ni registro, y todas responden con `Access-Control-Allow-Origin: *`.
+Las cuatro primeras no piden clave ni registro y responden con
+`Access-Control-Allow-Origin: *`. FIRMS es la excepción, y por eso se consulta
+aparte (ver más abajo).
 
 ## Decisiones que no son obvias leyendo el código
 
@@ -102,10 +104,18 @@ Cada `git push` a `main` republica el sitio solo, en un par de minutos.
 
 ## Si haces cambios y no se ven
 
-El service worker guarda una copia de los archivos con estrategia
-*stale-while-revalidate*: la primera vez que abras después de un cambio verás la
-versión vieja, y la segunda ya sale la nueva. Para forzarlo, sube el número de
-`CACHE` en `sw.js`.
+Son dos capas de caché, y hay que entenderlas juntas:
+
+1. **GitHub Pages** sirve con `Cache-Control: max-age=600`, así que el navegador
+   se queda con su copia diez minutos. Por eso cada archivo lleva `?v=N` en la
+   URL: **corre `node version.js` antes de cada push** y el problema desaparece.
+2. **El service worker** guarda los archivos con estrategia
+   *stale-while-revalidate*: la primera vez que abras después de un cambio verás
+   la versión vieja y la segunda ya sale la nueva. Es a propósito, para que la
+   app abra al instante y funcione sin señal.
+
+Si te saltas el paso 1, el service worker termina guardando los archivos viejos
+y el cambio no se ve nunca. Ese fue un error real que costó rato encontrar.
 
 ## Límites conocidos
 
@@ -169,3 +179,21 @@ gh secret set FIRMS_MAP_KEY --repo Rodrigobade/sismos-chile
 
 También se puede hacer desde *Settings → Secrets and variables → Actions → New
 repository secret*, con el nombre `FIRMS_MAP_KEY`.
+
+## Dónde quedó esto (25 de agosto de 2026)
+
+Las cinco secciones funcionan con datos reales, verificadas en vivo desde
+pantalla de teléfono. El secreto `FIRMS_MAP_KEY` está cargado y el flujo de
+incendios corre solo cada tres horas.
+
+Ideas que quedaron sobre la mesa, en orden de utilidad:
+
+- **Avisos de sismo con la app cerrada.** Hoy solo llegan con la app abierta o
+  en segundo plano reciente. Un aviso real necesita push desde un servidor, que
+  esta app deliberadamente no tiene. Habría que decidir si vale la pena.
+- **Buscador de comuna** en farmacias: hoy es un desplegable de 238 opciones y
+  se hace largo en el teléfono.
+- **Guardar comunas o estaciones favoritas**, para no filtrar cada vez.
+- **Historial de sismos sentidos** cerca de la ubicación del usuario.
+- **Avisos meteorológicos oficiales** de la Dirección Meteorológica de Chile, si
+  algún día publican algo consumible. Hoy no.
