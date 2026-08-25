@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Sismos Chile</title>
-<meta name="description" content="Sismos y calidad del aire en Chile en tiempo real, con datos del Centro Sismológico Nacional, USGS y el SINCA. Sin publicidad.">
+<meta name="description" content="Sismos, farmacias de turno, clima y calidad del aire en Chile, en tiempo real y con fuentes oficiales. Sin publicidad ni rastreo.">
 <meta name="theme-color" content="#0f1216">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icono.svg" type="image/svg+xml">
@@ -25,6 +25,8 @@
 
 <nav class="pestanias" role="tablist" aria-label="Secciones">
   <button class="pestania" role="tab" data-vista="sismos" aria-selected="true">Sismos</button>
+  <button class="pestania" role="tab" data-vista="farmacias" aria-selected="false">Farmacias de turno</button>
+  <button class="pestania" role="tab" data-vista="clima" aria-selected="false">Clima</button>
   <button class="pestania" role="tab" data-vista="aire" aria-selected="false">Calidad del aire</button>
 </nav>
 
@@ -44,7 +46,14 @@
   </section>
 
   <div class="panel" data-vista="sismos">
-    <section class="filtros">
+    <section class="filtros filtros-3">
+      <label class="filtro">
+        <span>Zona</span>
+        <select id="f-ambito">
+          <option value="chile">Chile</option>
+          <option value="mundo">Todo el mundo</option>
+        </select>
+      </label>
       <label class="filtro">
         <span>Magnitud <b id="f-mag-val"></b></span>
         <input id="f-mag" type="range" min="0" max="6" step="0.5">
@@ -60,6 +69,33 @@
       </label>
     </section>
     <section id="lista" class="lista"></section>
+  </div>
+
+  <div class="panel" data-vista="farmacias" hidden>
+    <section class="filtros">
+      <label class="filtro">
+        <span>Comuna</span>
+        <select id="f-comuna"><option value="">Todo Chile</option></select>
+      </label>
+      <label class="filtro check-filtro">
+        <span>Disponibilidad</span>
+        <label class="check">
+          <input id="f-abiertas" type="checkbox">
+          <span>Solo las abiertas ahora</span>
+        </label>
+      </label>
+    </section>
+    <section id="lista-farmacias" class="lista"></section>
+  </div>
+
+  <div class="panel" data-vista="clima" hidden>
+    <section class="filtros">
+      <label class="filtro">
+        <span>Ciudad</span>
+        <select id="f-ciudad"></select>
+      </label>
+    </section>
+    <section id="lista-clima"></section>
   </div>
 
   <div class="panel" data-vista="aire" hidden>
@@ -112,7 +148,10 @@
 </dialog>
 
 <script src="geo.js"></script>
+<script src="mundo.js"></script>
 <script src="app.js"></script>
 <script src="aire.js"></script>
+<script src="farmacias.js"></script>
+<script src="clima.js"></script>
 </body>
 </html>

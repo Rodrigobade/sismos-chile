@@ -27,7 +27,7 @@ estado.vista = estado.prefs.vista || 'sismos';
 
 function cargarPrefs() {
   const base = { magMin: 0, dias: 7, umbralAviso: 5.0, avisos: false,
-                 tema: 'auto', vista: 'sismos' };
+                 tema: 'auto', vista: 'sismos', ambito: 'chile', ciudad: 'Talca' };
   try { return Object.assign(base, JSON.parse(localStorage.getItem(PREF_KEY) || '{}')); }
   catch { return base; }
 }
@@ -183,14 +183,20 @@ function traducirLugar(p) {
   return p;
 }
 
-async function traerUSGS(dias) {
+async function traerUSGS(dias, ambito = 'chile') {
   const desde = new Date(Date.now() - dias * 86400000).toISOString().slice(0, 10);
-  const q = new URLSearchParams({
-    format: 'geojson', starttime: desde,
-    minlatitude: '-57', maxlatitude: '-17',
-    minlongitude: '-76', maxlongitude: '-66',
-    minmagnitude: '2.5', orderby: 'time', limit: '500'
-  });
+  const q = new URLSearchParams({ format: 'geojson', starttime: desde, orderby: 'time' });
+
+  if (ambito === 'mundo') {
+    // Sin filtro de zona hay miles de eventos diarios: bajo 4.0 la lista deja
+    // de ser legible y el mapa se vuelve una mancha.
+    q.set('minmagnitude', '4.0');
+    q.set('limit', '800');
+  } else {
+    q.set('minlatitude', '-57'); q.set('maxlatitude', '-17');
+    q.set('minlongitude', '-76'); q.set('maxlongitude', '-66');
+    q.set('minmagnitude', '2.5'); q.set('limit', '500');
+  }
   const r = await fetch(`${USGS_URL}?${q}`, { cache: 'no-store' });
   if (!r.ok) throw new Error('USGS ' + r.status);
   const g = await r.json();
@@ -237,7 +243,13 @@ async function actualizar({ silencioso = false } = {}) {
   if (!silencioso) pintarEstado();
 
   const dias = estado.prefs.dias;
-  const [rc, ru] = await Promise.allSettled([traerCSN(), traerUSGS(dias)]);
+  const mundial = estado.prefs.ambito === 'mundo';
+
+  // Fuera de Chile el CSN no tiene nada que aportar: mandar USGS solo.
+  const [rc, ru] = await Promise.allSettled([
+    mundial ? Promise.resolve([]) : traerCSN(),
+    traerUSGS(dias, estado.prefs.ambito)
+  ]);
   const csn  = rc.status === 'fulfilled' ? rc.value : [];
   const usgs = ru.status === 'fulfilled' ? ru.value : [];
 
@@ -252,12 +264,12 @@ async function actualizar({ silencioso = false } = {}) {
     return;
   }
 
-  estado.error = (rc.status === 'rejected' || ru.status === 'rejected')
+  estado.error = (!mundial && (rc.status === 'rejected' || ru.status === 'rejected'))
     ? 'Una de las dos fuentes no respondió; los datos pueden estar incompletos.'
     : null;
 
   const previos = new Set(estado.sismos.map(s => s.id));
-  estado.sismos = fusionar(csn, usgs);
+  estado.sismos = mundial ? usgs.sort((a, b) => b.t - a.t) : fusionar(csn, usgs);
   estado.actualizado = Date.now();
   guardarCache();
 
@@ -333,19 +345,40 @@ const $ = sel => document.querySelector(sel);
 
 let ultimosMarcadores = [];
 
-/* Repinta la sección activa. La de aire vive en aire.js y se registra sola. */
+/* Registro de secciones. Cada módulo (aire.js, farmacias.js, clima.js) se
+   inscribe con { usaMapa, iniciar, pintar, abrirFicha, refrescar }; app.js
+   solo despacha, y así agregar una sección no obliga a tocar el resto. */
+const SECCIONES = {};
+
+function registrarSeccion(id, def) {
+  SECCIONES[id] = Object.assign({ usaMapa: true, iniciar() {}, refrescar() {} }, def);
+}
+
 function pintar() {
-  if (estado.vista === 'aire') { if (window.pintarAire) pintarAire(); return; }
+  const s = SECCIONES[estado.vista];
+  if (s) s.pintar();
+}
+
+registrarSeccion('sismos', {
+  usaMapa: true,
+  pintar: pintarSismos,
+  abrirFicha: abrirDetalle,
+  refrescar: () => actualizar()
+});
+
+function pintarSismos() {
   pintarEstado();
   const lista = filtrados();
   pintarResumen(lista);
   pintarLista(lista);
   pintarLeyendaSismos();
   pintarMapa(marcadoresSismos(lista));
-  $('#creditos').innerHTML =
-    'Datos del <strong>Centro Sismológico Nacional</strong> (Universidad de Chile) ' +
-    'y del <strong>USGS</strong>. Esta app es informativa y no es un sistema de alerta ' +
-    'temprana: ante una emergencia siga las instrucciones de <strong>SENAPRED</strong>.';
+  $('#creditos').innerHTML = estado.prefs.ambito === 'mundo'
+    ? 'Datos del <strong>USGS</strong>, desde magnitud 4.0. Contorno de los ' +
+      'continentes: Natural Earth (dominio público).'
+    : 'Datos del <strong>Centro Sismológico Nacional</strong> (Universidad de Chile) ' +
+      'y del <strong>USGS</strong>. Esta app es informativa y no es un sistema de alerta ' +
+      'temprana: ante una emergencia siga las instrucciones de <strong>SENAPRED</strong>.';
 }
 
 function pintarLeyendaSismos() {
@@ -355,22 +388,32 @@ function pintarLeyendaSismos() {
 }
 
 function cambiarVista(vista) {
+  if (!SECCIONES[vista]) vista = 'sismos';
   estado.vista = vista;
   estado.prefs.vista = vista;
   guardarPrefs();
 
-  document.querySelectorAll('.pestania').forEach(b =>
-    b.setAttribute('aria-selected', String(b.dataset.vista === vista)));
+  const s = SECCIONES[vista];
+
+  document.querySelectorAll('.pestania').forEach(b => {
+    const activa = b.dataset.vista === vista;
+    b.setAttribute('aria-selected', String(activa));
+    if (activa) b.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  });
   document.querySelectorAll('.panel').forEach(p =>
     p.hidden = p.dataset.vista !== vista);
 
+  // El mapa de Chile completo no sirve para todas las secciones: una farmacia
+  // a escala de país es un punto indistinguible.
+  $('.mapa-caja').hidden = !s.usaMapa;
+
   vistaFijada = false;                 // cada sección encuadra el mapa a lo suyo
-  if (vista === 'aire' && window.iniciarAire) iniciarAire();
+  s.iniciar();
   pintar();
 }
 
 function pintarEstado() {
-  if (estado.vista !== 'sismos') return;   // la línea de estado es compartida
+  if (estado.vista !== 'sismos') return;   // la linea de estado es compartida
   const el = $('#estado');
   if (estado.cargando && !estado.sismos.length) { el.textContent = 'Consultando…'; el.className = 'estado'; return; }
   if (estado.error) { el.textContent = estado.error; el.className = 'estado alerta'; return; }
@@ -425,20 +468,40 @@ function escapar(s) {
 
 /* Proyección equirectangular con corrección por latitud media: para un país
    angosto y largo es suficiente y no necesita librerías. */
-const MAPA = { lonMin: -76.5, lonMax: -66, latMin: -56.5, latMax: -17 };
-const COS_LAT = Math.cos(-36 * Math.PI / 180);
+/* Dos mapas con la misma maquinaria: el de Chile estira el eje este-oeste
+   (a escala real el país es una cinta de pocos píxeles en un teléfono) y el
+   del mundo no lo necesita. Ambos son mapas de ubicación, no cartografía. */
+const MAPAS = {
+  chile: {
+    lonMin: -76.5, lonMax: -66, latMin: -56.5, latMax: -17,
+    cosLat: Math.cos(-36 * Math.PI / 180), exagera: 3, escala: 10,
+    formas: () => [CHILE_OUTLINE, CHILOE_OUTLINE],
+    ciudades: () => MAPA_CIUDADES
+  },
+  mundo: {
+    // El mundo abarca 360 grados contra los 10 de Chile: sin bajar la escala
+    // el lienzo queda 13 veces más grande y los puntos y etiquetas, que se
+    // miden en unidades del lienzo, se volverían invisibles.
+    lonMin: -180, lonMax: 180, latMin: -60, latMax: 84,
+    cosLat: 1, exagera: 1, escala: 1.1,
+    formas: () => MUNDO_OUTLINE,
+    ciudades: () => MUNDO_CIUDADES
+  }
+};
 
-/* Chile mide 4300 km de largo por 180 de ancho: a escala real queda una cinta
-   de pocos píxeles en un teléfono. Estiramos el eje este-oeste para que el país
-   llene la pantalla. Es un mapa de ubicación, no cartográfico. */
-const EXAGERA = 3;
+let MAPA = MAPAS.chile;
+let ANCHO = 0, ALTO = 0;
 
-const ANCHO = (MAPA.lonMax - MAPA.lonMin) * COS_LAT * 10 * EXAGERA;
-const ALTO  = (MAPA.latMax - MAPA.latMin) * 10;
+function usarMapa(nombre) {
+  MAPA = MAPAS[nombre] || MAPAS.chile;
+  ANCHO = (MAPA.lonMax - MAPA.lonMin) * MAPA.cosLat * MAPA.escala * MAPA.exagera;
+  ALTO  = (MAPA.latMax - MAPA.latMin) * MAPA.escala;
+  vistaFijada = false;
+}
 
 const proj = (lat, lon) => [
-  (lon - MAPA.lonMin) * COS_LAT * 10 * EXAGERA,
-  (MAPA.latMax - lat) * 10
+  (lon - MAPA.lonMin) * MAPA.cosLat * MAPA.escala * MAPA.exagera,
+  (MAPA.latMax - lat) * MAPA.escala
 ];
 
 const vista = { x: 0, y: 0, w: ANCHO, h: ALTO };
@@ -518,7 +581,7 @@ function pintarMapa(marcadores) {
     return `<circle class="pt ${m.clase}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${m.r.toFixed(1)}" data-id="${escapar(m.id)}"><title>${escapar(m.titulo)}</title></circle>`;
   }).join('');
 
-  const ciudades = MAPA_CIUDADES.map(([nombre, lat, lon]) => {
+  const ciudades = MAPA.ciudades().map(([nombre, lat, lon]) => {
     const [x, y] = proj(lat, lon);
     return `<circle class="ciudad" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2"/>
             <text class="etq" x="${(x + 5).toFixed(1)}" y="${(y + 2.6).toFixed(1)}">${nombre}</text>`;
@@ -529,10 +592,10 @@ function pintarMapa(marcadores) {
     return `<circle class="yo" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3"/>`;
   })() : '';
 
-  svg.innerHTML = `
-    <path class="tierra" d="${ruta(CHILE_OUTLINE, true)}"/>
-    <path class="tierra" d="${ruta(CHILOE_OUTLINE, true)}"/>
-    ${ciudades}${puntos}${yo}`;
+  const tierra = MAPA.formas()
+    .map(f => `<path class="tierra" d="${ruta(f, true)}"/>`).join('');
+
+  svg.innerHTML = tierra + ciudades + puntos + yo;
 
   ultimosMarcadores = marcadores;
   if (vistaFijada) aplicarVista(); else vistaPais();
@@ -659,8 +722,8 @@ function separacion(t) {
 
 /* Cada sección tiene su propia ficha; el clic es el mismo. */
 function abrirFicha(id) {
-  if (estado.vista === 'aire') { if (window.abrirDetalleAire) abrirDetalleAire(id); return; }
-  abrirDetalle(id);
+  const s = SECCIONES[estado.vista];
+  if (s && s.abrirFicha) s.abrirFicha(id);
 }
 
 function abrirDetalle(id) {
@@ -763,6 +826,16 @@ function conectarControles() {
     guardarPrefs(); actualizar();
   });
 
+  const ambito = $('#f-ambito');
+  ambito.value = estado.prefs.ambito;
+  ambito.addEventListener('change', () => {
+    estado.prefs.ambito = ambito.value;
+    guardarPrefs();
+    usarMapa(ambito.value === 'mundo' ? 'mundo' : 'chile');
+    estado.sismos = [];
+    actualizar();
+  });
+
   umbral.addEventListener('input', () => {
     estado.prefs.umbralAviso = +umbral.value;
     $('#f-umbral-val').textContent = '≥ ' + (+umbral.value).toFixed(1);
@@ -775,7 +848,7 @@ function conectarControles() {
   });
 
   $('#btn-refrescar').addEventListener('click', () =>
-    estado.vista === 'aire' ? traerAire() : actualizar());
+    SECCIONES[estado.vista].refrescar());
   $('#btn-ubicacion').addEventListener('click', pedirUbicacion);
   $('#btn-ajustes').addEventListener('click', () => $('#ajustes').showModal());
   $('#btn-tema').addEventListener('click', () => {
@@ -804,6 +877,7 @@ function iniciar() {
   restaurarCache();
   conectarControles();
   conectarMapa();
+  usarMapa(estado.prefs.ambito === 'mundo' ? 'mundo' : 'chile');
   cambiarVista(estado.vista);     // deja la sección donde la dejó el usuario
   actualizar({ silencioso: estado.vista !== 'sismos' });
 

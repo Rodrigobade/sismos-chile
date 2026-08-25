@@ -18,7 +18,7 @@
 
 <main class="texto">
 
-<p class="fecha">Versión 1 · 25 de agosto de 2026</p>
+<p class="fecha">Versión 2 · 25 de agosto de 2026</p>
 
 <h2>En resumen</h2>
 <ul class="resumen-lista">
@@ -28,9 +28,9 @@
       cuántos kilómetros quedó el epicentro. No se guarda ni se envía a ninguna parte.</li>
   <li>Lo único que queda almacenado son <strong>tus preferencias y la última lista de sismos</strong>,
       en el navegador de tu propio dispositivo.</li>
-  <li>Al abrir la aplicación, tu <strong>dirección IP queda visible</strong> para los tres servicios
-      que entregan la página y los datos: GitHub, gael.cloud y el USGS. Eso ocurre en cualquier
-      sitio web, pero corresponde decirlo.</li>
+  <li>Al abrir la aplicación, tu <strong>dirección IP queda visible</strong> para los servicios
+      que entregan la página y los datos (GitHub, gael.cloud, USGS, SINCA, MINSAL y Open-Meteo).
+      Eso ocurre en cualquier sitio web, pero corresponde decirlo.</li>
   <li>Para borrar todo: <em>Configuración del navegador → Datos de sitios → borrar los de este
       sitio</em>. O desinstala la aplicación si la instalaste.</li>
 </ul>
@@ -60,13 +60,13 @@
     <td>Solo en la memoria de la aplicación mientras está abierta. Se pierde al cerrarla.</td>
   </tr>
   <tr>
-    <td>Preferencias (magnitud mínima, periodo, tema, umbral de aviso)</td>
+    <td>Preferencias (sección, zona, magnitud mínima, periodo, comuna, ciudad, tema, umbral de aviso)</td>
     <td>Que la aplicación abra como la dejaste</td>
     <td>Interés legítimo en que la aplicación funcione</td>
     <td><code>localStorage</code> de tu navegador, en tu dispositivo</td>
   </tr>
   <tr>
-    <td>Última lista de sismos descargada</td>
+    <td>Últimos datos descargados (sismos, estaciones de aire, farmacias de turno, pronóstico)</td>
     <td>Poder mostrarte algo cuando no hay señal</td>
     <td>Interés legítimo en que la aplicación funcione</td>
     <td><code>localStorage</code> de tu navegador. Se reemplaza en cada actualización.</td>
@@ -82,8 +82,8 @@
 </table>
 </div>
 
-<p>La lista de sismos no contiene datos personales de nadie: son hora, magnitud, profundidad y
-   referencia geográfica de eventos naturales.</p>
+<p>Nada de lo que se descarga contiene datos personales: son mediciones de fenómenos naturales y
+   registros públicos de establecimientos comerciales de turno.</p>
 
 <h2>4. Qué no se hace</h2>
 <ul>
@@ -125,15 +125,36 @@
   </tr>
   <tr>
     <td>earthquake.usgs.gov</td><td>Tu IP</td>
-    <td>Entregar el catálogo del USGS, con las coordenadas</td><td>Estados Unidos</td>
+    <td>Entregar el catálogo sísmico del USGS, con las coordenadas</td><td>Estados Unidos</td>
+  </tr>
+  <tr>
+    <td>sinca.mma.gob.cl</td><td>Tu IP</td>
+    <td>Entregar las mediciones de calidad del aire del Ministerio del Medio Ambiente</td>
+    <td>Chile</td>
+  </tr>
+  <tr>
+    <td>midas.minsal.cl</td><td>Tu IP</td>
+    <td>Entregar las farmacias de turno del día, publicadas por el Ministerio de Salud</td>
+    <td>Chile</td>
+  </tr>
+  <tr>
+    <td>api.open-meteo.com</td>
+    <td>Tu IP y las <strong>coordenadas de la ciudad elegida</strong>, nunca las tuyas</td>
+    <td>Entregar el pronóstico del tiempo</td><td>Alemania</td>
   </tr>
 </tbody>
 </table>
 </div>
 
-<p><strong>Transferencia internacional:</strong> dos de esos servicios están fuera de Chile. No se
-   les envía ningún dato tuyo aparte de la IP inherente a la conexión, y no se les envía jamás tu
-   ubicación. Cada uno se rige por su propia política de privacidad.</p>
+<p><strong>El pronóstico no delata dónde estás.</strong> La aplicación consulta el clima usando las
+   coordenadas de una ciudad de la lista, no las tuyas. Si autorizas la ubicación, se usa dentro
+   del teléfono solo para preseleccionar la ciudad más cercana; lo que viaja es la ciudad, no tu
+   posición.</p>
+
+<p><strong>Transferencia internacional:</strong> tres de esos servicios están fuera de Chile
+   (Estados Unidos y Alemania). No se les envía ningún dato tuyo aparte de la IP inherente a la
+   conexión, y no se les envía jamás tu ubicación. Cada uno se rige por su propia política de
+   privacidad.</p>
 
 <h2>7. Tus derechos</h2>
 <p>La Ley 21.719 te da derecho a acceder a tus datos, rectificarlos, suprimirlos, oponerte al
@@ -164,6 +185,10 @@
 <p>Sismos Chile es <strong>informativa</strong> y no es un sistema de alerta temprana: muestra
    sismos ya ocurridos, cuando el CSN o el USGS los publican. Ante una emergencia rigen las
    instrucciones de <strong>SENAPRED</strong>.</p>
+<p>El pronóstico del tiempo sale de un <strong>modelo numérico</strong>. Los avisos, alertas y
+   alarmas meteorológicas oficiales los emite la <strong>Dirección Meteorológica de Chile</strong>.
+   Los horarios de las farmacias de turno los declara cada local ante el MINSAL: si vas de
+   madrugada, conviene llamar antes.</p>
 
 <p class="fina aviso">Este documento describe el software tal como está publicado y puede
    verificarse leyendo su código fuente. No constituye asesoría legal; si la aplicación llegara a

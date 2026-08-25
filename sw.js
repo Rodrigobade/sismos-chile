@@ -2,15 +2,18 @@
    Los datos sísmicos NO se cachean aquí: siempre van a la red y, si falla,
    app.js muestra la última copia guardada en localStorage. */
 
-const CACHE = 'sismos-chile-v3';
+const CACHE = 'sismos-chile-v4';
 const ARCHIVOS = [
   './',
   'index.html',
   'privacidad.html',
   'app.css',
   'geo.js',
+  'mundo.js',
   'app.js',
   'aire.js',
+  'farmacias.js',
+  'clima.js',
   'manifest.webmanifest',
   'icono.svg'
 ];

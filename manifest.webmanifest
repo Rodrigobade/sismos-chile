@@ -1,7 +1,7 @@
 {
   "name": "Sismos Chile",
   "short_name": "Sismos",
-  "description": "Sismos en Chile en tiempo real, con datos del Centro Sismológico Nacional y USGS. Sin publicidad.",
+  "description": "Sismos, farmacias de turno, clima y calidad del aire en Chile, en tiempo real y con fuentes oficiales. Sin publicidad ni rastreo.",
   "lang": "es-CL",
   "start_url": "./",
   "scope": "./",
@@ -9,11 +9,33 @@
   "orientation": "portrait",
   "background_color": "#0f1216",
   "theme_color": "#0f1216",
-  "categories": ["news", "weather", "utilities"],
+  "categories": [
+    "news",
+    "weather",
+    "medical",
+    "utilities"
+  ],
   "icons": [
-    { "src": "icono-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
-    { "src": "icono.svg", "sizes": "any", "type": "image/svg+xml" }
+    {
+      "src": "icono-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icono-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icono-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icono.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
   ]
 }

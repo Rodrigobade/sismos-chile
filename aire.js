@@ -326,6 +326,14 @@ function iniciarAire() {
   }, AIRE_REFRESCO_MS);
 }
 
+registrarSeccion('aire', {
+  usaMapa: true,
+  iniciar: iniciarAire,
+  pintar: pintarAire,
+  abrirFicha: abrirDetalleAire,
+  refrescar: traerAire
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   $('#f-region').addEventListener('change', e => { aire.region = e.target.value; pintarAire(); });
   $('#f-contaminante').addEventListener('change', e => {
