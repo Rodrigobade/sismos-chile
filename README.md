@@ -58,11 +58,21 @@ como `+560`. Ambos se validan antes de usarlos: sin coordenada plausible no se
 calcula distancia, y sin teléfono válido no se ofrece el botón de llamar. Un
 turno que "cierra" antes de abrir cruza la medianoche y se interpreta así.
 
-**Mapas.** Hay dos con la misma maquinaria. El de Chile **estira el eje
-este-oeste tres veces**, porque a escala real un país de 4300 × 180 km es una
-cinta ilegible en un teléfono. El del mundo no lo necesita, pero usa una escala
-distinta para que puntos y etiquetas se vean del mismo tamaño en pantalla. Los
-dos son mapas de ubicación, no cartografía.
+**Mapas.** Hay dos con la misma maquinaria. El de Chile se dibuja como las
+**16 regiones**, generadas desde Natural Earth 10m: puestas juntas forman el
+país, y de paso sirven para orientarse — saber que un sismo fue en el Maule
+dice más que un punto suelto. El primer contorno estaba escrito a mano con unos
+100 puntos aproximados; este trae la costa real, los fiordos, Chiloé y Tierra
+del Fuego.
+
+El eje este-oeste va **estirado tres veces**, porque a escala real un país de
+4300 × 180 km es una cinta ilegible en un teléfono. El del mundo no lo necesita,
+pero usa otra escala para que puntos y etiquetas se vean del mismo tamaño en
+pantalla. Los dos son mapas de ubicación, no cartografía.
+
+En el centro hay cinco regiones chicas y pegadas cuyos nombres se encaraman, así
+que se descartan los que no alcanzan a separarse. El umbral se mide contra el
+encuadre actual: al acercarse caben más nombres y aparecen solos.
 
 **Clima.** La consulta se hace con las coordenadas de una ciudad de la lista,
 nunca con las del usuario. Si autoriza la ubicación, se usa solo dentro del
@@ -78,7 +88,8 @@ teléfono para preseleccionar la ciudad más cercana.
 | `aire.js`, `farmacias.js`, `clima.js`, `incendios.js` | una sección cada uno |
 | `scripts/traer-incendios.js` | consulta a FIRMS, **corre en GitHub Actions** |
 | `version.js` | sella el número de versión antes de publicar |
-| `geo.js` | localidades chilenas y contorno de Chile |
+| `geo.js` | localidades chilenas, para estimar epicentros |
+| `geo-chile.js` | las 16 regiones (Natural Earth, dominio público) |
 | `mundo.js` | contorno de los continentes (Natural Earth, dominio público) |
 | `sw.js` | service worker |
 | `privacidad.html` | aviso de privacidad |

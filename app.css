@@ -193,7 +193,9 @@ main { max-width: 720px; margin: 0 auto; padding: 0 14px 32px; }
   cursor: grab;
 }
 
-.tierra { fill: var(--tierra); stroke: var(--borde); stroke-width: .6; }
+/* Las regiones se dibujan una por una: el borde tenue deja distinguirlas sin
+   convertir el mapa en un rompecabezas. */
+.tierra { fill: var(--tierra); stroke: var(--mar); stroke-width: .5; stroke-opacity: .9; }
 .ciudad { fill: var(--texto-2); opacity: .65; }
 .etq    { fill: var(--texto-2); font-size: 7px; opacity: .8;
           font-family: system-ui, sans-serif; }
@@ -493,3 +495,19 @@ dl { margin: 0; }
 .avisos ul { margin: 8px 0; padding-left: 20px; }
 .avisos li { margin-bottom: 4px; }
 .avisos .fina { margin: 8px 0 0; font-size: .76rem; color: var(--texto-2); }
+
+/* Nombres de región: van centrados sobre la región, no marcan un punto. */
+.etq-region {
+  text-anchor: middle;
+  fill: var(--texto-2);
+  font-size: 6.5px;
+  opacity: .85;
+  letter-spacing: .3px;
+  pointer-events: none;
+  /* Halo del color del mar, para que el nombre siga leyéndose cuando le cae
+     encima un epicentro. */
+  paint-order: stroke;
+  stroke: var(--mar);
+  stroke-width: 2px;
+  stroke-linejoin: round;
+}

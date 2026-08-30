@@ -475,8 +475,11 @@ const MAPAS = {
   chile: {
     lonMin: -76.5, lonMax: -66, latMin: -56.5, latMax: -17,
     cosLat: Math.cos(-36 * Math.PI / 180), exagera: 3, escala: 10,
-    formas: () => [CHILE_OUTLINE, CHILOE_OUTLINE],
-    ciudades: () => MAPA_CIUDADES
+    // Las 16 regiones dibujadas juntas forman el país, y de paso sirven para
+    // orientarse: saber que un sismo fue "en el Maule" dice más que un punto.
+    formas: () => CHILE_REGIONES.flatMap(r => r.a),
+    ciudades: () => CHILE_REGIONES.map(r => [r.n, r.c[1], r.c[0]]),
+    etiquetaConPunto: false
   },
   mundo: {
     // El mundo abarca 360 grados contra los 10 de Chile: sin bajar la escala
@@ -485,7 +488,8 @@ const MAPAS = {
     lonMin: -180, lonMax: 180, latMin: -60, latMax: 84,
     cosLat: 1, exagera: 1, escala: 1.1,
     formas: () => MUNDO_OUTLINE,
-    ciudades: () => MUNDO_CIUDADES
+    ciudades: () => MUNDO_CIUDADES,
+    etiquetaConPunto: true
   }
 };
 
@@ -571,6 +575,29 @@ function marcadoresSismos(lista) {
   }));
 }
 
+/* En el centro del país hay cinco regiones chicas y pegadas — Valparaíso,
+   Metropolitana, O'Higgins, Ñuble, Biobío — y sus nombres se encaraman unos
+   sobre otros. Se descartan las que no alcanzan a separarse, dejando primero
+   las de más al norte para que el orden sea estable y no bailen al desplazar.
+
+   El umbral se mide en unidades del lienzo pero escalado al encuadre actual:
+   al acercarse, la misma distancia se ve más grande y caben más nombres. */
+function etiquetasVisibles() {
+  const todas = MAPA.ciudades();
+  if (MAPA.etiquetaConPunto) return todas;
+
+  const separacion = vista.h * 0.032;
+  const puestas = [];
+  const salida = [];
+  for (const etq of todas.slice().sort((a, b) => b[1] - a[1])) {
+    const y = proj(etq[1], etq[2])[1];
+    if (puestas.some(v => Math.abs(v - y) < separacion)) continue;
+    puestas.push(y);
+    salida.push(etq);
+  }
+  return salida;
+}
+
 /* El mapa es compartido por las dos secciones: recibe marcadores ya
    resueltos, no sismos ni estaciones. */
 function pintarMapa(marcadores) {
@@ -581,10 +608,16 @@ function pintarMapa(marcadores) {
     return `<circle class="pt ${m.clase}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${m.r.toFixed(1)}" data-id="${escapar(m.id)}"><title>${escapar(m.titulo)}</title></circle>`;
   }).join('');
 
-  const ciudades = MAPA.ciudades().map(([nombre, lat, lon]) => {
+  // Las ciudades del mapa mundial llevan punto; los nombres de región van
+  // centrados sobre la región, sin punto, porque no marcan un lugar exacto.
+  const conPunto = MAPA.etiquetaConPunto;
+  const ciudades = etiquetasVisibles().map(([nombre, lat, lon]) => {
     const [x, y] = proj(lat, lon);
+    if (!conPunto) {
+      return `<text class="etq etq-region" x="${x.toFixed(1)}" y="${y.toFixed(1)}">${escapar(nombre)}</text>`;
+    }
     return `<circle class="ciudad" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2"/>
-            <text class="etq" x="${(x + 5).toFixed(1)}" y="${(y + 2.6).toFixed(1)}">${nombre}</text>`;
+            <text class="etq" x="${(x + 5).toFixed(1)}" y="${(y + 2.6).toFixed(1)}">${escapar(nombre)}</text>`;
   }).join('');
 
   const yo = estado.posicion ? (() => {
@@ -604,7 +637,7 @@ function pintarMapa(marcadores) {
 /* Zoom y desplazamiento manipulando el viewBox: sin librerías y sin tiles. */
 function conectarMapa() {
   const svg = $('#mapa');
-  let arrastre = null, pinza = null;
+  let arrastre = null, pinza = null, repintar = null;
 
   const escalaPantalla = () => vista.w / svg.getBoundingClientRect().width;
 
@@ -618,6 +651,11 @@ function conectarMapa() {
     vistaFijada = true;
     limitarVista();
     aplicarVista();
+    // Al cambiar el acercamiento caben más o menos nombres de región, así que
+    // hay que rehacerlos. Se espera a que el gesto termine para no repintar
+    // en cada paso de una pinza.
+    clearTimeout(repintar);
+    repintar = setTimeout(pintar, 180);
   }
 
   function desplazar(dx, dy) {
