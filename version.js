@@ -32,7 +32,9 @@ function sellar(v) {
   const swPath = path.join(RAIZ, 'sw.js');
   let sw = fs.readFileSync(swPath, 'utf8');
   sw = sw.replace(PATRON_CACHE, `const CACHE = 'sismos-chile-v${v}';`);
-  sw = sw.replace(/'([a-z]+\.(?:html|css|js|webmanifest|svg))(\?v=\d+)?'/g,
+  // El guion importa: sin él, geo-chile.js se queda sin sellar y se vuelve el
+  // único archivo que puede quedar viejo en la caché del navegador.
+  sw = sw.replace(/'([a-z-]+\.(?:html|css|js|webmanifest|svg))(\?v=\d+)?'/g,
                   (_, archivo) => `'${archivo}?v=${v}'`);
   fs.writeFileSync(swPath, sw);
 
@@ -40,7 +42,7 @@ function sellar(v) {
   for (const pagina of ['index.html', 'privacidad.html']) {
     const p = path.join(RAIZ, pagina);
     let h = fs.readFileSync(p, 'utf8');
-    h = h.replace(/(href|src)="([a-z]+\.(?:css|js|webmanifest))(\?v=\d+)?"/g,
+    h = h.replace(/(href|src)="([a-z-]+\.(?:css|js|webmanifest))(\?v=\d+)?"/g,
                   (_, attr, archivo) => `${attr}="${archivo}?v=${v}"`);
     fs.writeFileSync(p, h);
   }

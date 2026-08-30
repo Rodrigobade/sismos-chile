@@ -2,22 +2,22 @@
    Los datos sísmicos NO se cachean aquí: siempre van a la red y, si falla,
    app.js muestra la última copia guardada en localStorage. */
 
-const CACHE = 'sismos-chile-v12';
+const CACHE = 'sismos-chile-v13';
 const ARCHIVOS = [
   './',
-  'index.html?v=12',
-  'privacidad.html?v=12',
-  'app.css?v=12',
-  'geo.js?v=12',
-  'geo-chile.js',
-  'mundo.js?v=12',
-  'app.js?v=12',
-  'aire.js?v=12',
-  'farmacias.js?v=12',
-  'clima.js?v=12',
-  'incendios.js?v=12',
-  'manifest.webmanifest?v=12',
-  'icono.svg?v=12'
+  'index.html?v=13',
+  'privacidad.html?v=13',
+  'app.css?v=13',
+  'geo.js?v=13',
+  'geo-chile.js?v=13',
+  'mundo.js?v=13',
+  'app.js?v=13',
+  'aire.js?v=13',
+  'farmacias.js?v=13',
+  'clima.js?v=13',
+  'incendios.js?v=13',
+  'manifest.webmanifest?v=13',
+  'icono.svg?v=13'
 ];
 
 self.addEventListener('install', e => {
@@ -51,10 +51,10 @@ self.addEventListener('fetch', e => {
       fetch(e.request)
         .then(r => {
           const copia = r.clone();
-          caches.open(CACHE).then(c => c.put('index.html?v=12', copia));
+          caches.open(CACHE).then(c => c.put('index.html?v=13', copia));
           return r;
         })
-        .catch(() => caches.match('index.html?v=12'))
+        .catch(() => caches.match('index.html?v=13'))
     );
     return;
   }
